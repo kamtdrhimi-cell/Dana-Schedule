@@ -2,301 +2,309 @@
 <!DOCTYPE html>
 <html lang="si">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>දාන වේල් කළමනාකරණය (Advanced Table Mode)</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 15px; background-color: #f4f4f9; font-size: 14px; }
-        h2 { text-align: center; color: #333; margin-bottom: 10px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .form-group { display: flex; flex-direction: column; }
-        label { margin-bottom: 3px; font-weight: bold; color: #444; }
-        input, select { padding: 6px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        
-        .submit-btn { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: bold; }
-        .submit-btn:hover { background-color: #218838; }
-        
-        /* Filter and Summary Section */
-        .filter-section { background: #e9ecef; padding: 12px; border-radius: 6px; margin-top: 20px; }
-        .summary-box { display: flex; justify-content: space-around; background: #007bff; color: white; padding: 10px; border-radius: 5px; margin-top: 10px; font-weight: bold; }
-        
-        /* Table Styling (Simple Mode) */
-        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
-        th { background-color: #f8f9fa; color: #333; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        
-        /* Action Buttons */
-        .action-btn { padding: 4px 8px; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 2px; }
-        .edit-btn { background-color: #ffc107; color: black; }
-        .delete-btn { background-color: #dc3545; color: white; }
-        
-        /* Badges */
-        .badge { padding: 3px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; text-align: center; display: inline-block; }
-        .badge-yes { background-color: #d4edda; color: #155724; }
-        .badge-no { background-color: #f8d7da; color: #721c24; }
-        .badge-unknown { background-color: #fff3cd; color: #856404; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>දාන වේල් කළමනාකරණය (Cloud Sync & Live Filter)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 15px; background-color: #f4f4f9; font-size: 14px; }
+        h2 { text-align: center; color: #333; margin-bottom: 10px; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 3px; font-weight: bold; color: #444; }
+        input, select { padding: 6px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        
+        .submit-btn { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: bold; }
+        .submit-btn:hover { background-color: #218838; }
+        
+        /* Filter and Summary Section */
+        .filter-section { background: #e9ecef; padding: 12px; border-radius: 6px; margin-top: 20px; }
+        .summary-box { display: flex; justify-content: space-around; background: #007bff; color: white; padding: 10px; border-radius: 5px; margin-top: 10px; font-weight: bold; }
+        
+        /* Table Styling (Simple Mode) */
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 700px; }
+        th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
+        th { background-color: #f8f9fa; color: #333; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Action Buttons */
+        .action-btn { padding: 4px 8px; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 2px; }
+        .edit-btn { background-color: #ffc107; color: black; }
+        .delete-btn { background-color: #dc3545; color: white; }
+        
+        /* Badges */
+        .badge { padding: 3px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; text-align: center; display: inline-block; }
+        .badge-yes { background-color: #d4edda; color: #155724; }
+        .badge-no { background-color: #f8d7da; color: #721c24; }
+        .badge-unknown { background-color: #fff3cd; color: #856404; }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>දාන වේල් දිනපොත (Table Mode)</h2>
-    
-    <!-- දත්ත ඇතුලත් කිරීමේ කොටස -->
-    <div class="form-grid">
-        <div class="form-group">
-            <label>දිනය:</label>
-            <input type="date" id="date">
-        </div>
-        <div class="form-group">
-            <label>නම:</label>
-            <input type="text" id="name" placeholder="නම">
-        </div>
-        <div class="form-group">
-            <label>ලිපිනය:</label>
-            <input type="text" id="address" placeholder="ලිපිනය">
-        </div>
-        <div class="form-group">
-            <label>දුරකථනය:</label>
-            <input type="tel" id="phone" placeholder="දුරකථනය">
-        </div>
-        <div class="form-group">
-            <label>පැමිණෙනවාද?:</label>
-            <select id="attendance">
-                <option value="ඔව්">ඔව්</option>
-                <option value="නැත">නැත</option>
-                <option value="තවම දන්නේ නැත">තවම දන්නේ නැත</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>වියදම (රු.):</label>
-            <input type="number" id="expense" placeholder="0.00" min="0">
-        </div>
-    </div>
-    <button id="submitBtn" class="submit-btn" onclick="saveRecord()">දත්ත සුරකින්න</button>
+    <h2>දාන වේල් දිනපොත (Cloud Connected)</h2>
+    
+    <!-- දත්ත ඇතුලත් කිරීමේ කොටස -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>දිනය:</label>
+            <input type="date" id="date">
+        </div>
+        <div class="form-group">
+            <label>නම:</label>
+            <input type="text" id="name" placeholder="නම">
+        </div>
+        <div class="form-group">
+            <label>ලිපිනය:</label>
+            <input type="text" id="address" placeholder="ලිපිනය">
+        </div>
+        <div class="form-group">
+            <label>දුරකථනය:</label>
+            <input type="tel" id="phone" placeholder="දුරකථනය">
+        </div>
+        <div class="form-group">
+            <label>පැමිණෙනවාද?:</label>
+            <select id="attendance">
+                <option value="ඔව්">ඔව්</option>
+                <option value="නැත">නැත</option>
+                <option value="තවම දන්නේ නැත">තවම දන්නේ නැත</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>වියදම (රු.):</label>
+            <input type="number" id="expense" placeholder="0.00" min="0">
+        </div>
+    </div>
+    <button id="submitBtn" class="submit-btn" onclick="saveRecord()">දත්ත සුරකින්න</button>
 
-    <!-- පෙරහන් සහ සාරාංශය (Filters & Summary) -->
-    <div class="filter-section">
-        <div class="form-grid" style="margin-bottom: 0;">
-            <div class="form-group">
-                <label>වසර:</label>
-                <select id="filterYear" onchange="displayRecords()">
-                    <option value="All">සියලුම වසරවල්</option>
-                    <option value="2025">2025</option>
-                    <option value="2026" selected>2026</option>
-                    <option value="2027">2027</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>මාසය:</label>
-                <select id="filterMonth" onchange="displayRecords()">
-                    <option value="All">සියලුම මාසයන්</option>
-                    <option value="01">ජනවාරි</option>
-                    <option value="02">පෙබරවාරි</option>
-                    <option value="03">මාර්තු</option>
-                    <option value="04">අප්‍රේල්</option>
-                    <option value="05">මැයි</option>
-                    <option value="06">ජූනි</option>
-                    <option value="07">ජූලි</option>
-                    <option value="08">අගෝස්තු</option>
-                    <option value="09">සැප්තැම්බර්</option>
-                    <option value="10">ඔක්තෝබර්</option>
-                    <option value="11">නොවැම්බර්</option>
-                    <option value="12">දෙසැම්බර්</option>
-                </select>
-            </div>
-            <div class="form-group" style="grid-column: span 2;">
-                <label>නම මගින් සෙවීම:</label>
-                <input type="text" id="searchName" oninput="displayRecords()" placeholder="සෙවීමට නම ටයිප් කරන්න...">
-            </div>
-        </div>
+    <!-- පෙරහන් සහ සාරාංශය (Filters & Summary) -->
+    <div class="filter-section">
+        <div class="form-grid" style="margin-bottom: 0;">
+            <div class="form-group">
+                <label>වසර:</label>
+                <select id="filterYear" onchange="displayRecords()">
+                    <option value="All">සියලුම වසරවල්</option>
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>මාසය:</label>
+                <select id="filterMonth" onchange="displayRecords()">
+                    <option value="All">සියලුම මාසයන්</option>
+                    <option value="01">ජනවාරි</option>
+                    <option value="02">පෙබරවාරි</option>
+                    <option value="03">මාර්තු</option>
+                    <option value="04">අප්‍රේල්</option>
+                    <option value="05">මැයි</option>
+                    <option value="06">ජූනි</option>
+                    <option value="07">ජූලි</option>
+                    <option value="08">අගෝස්තු</option>
+                    <option value="09">සැප්තැම්බර්</option>
+                    <option value="10">ඔක්තෝබර්</option>
+                    <option value="11">නොවැම්බර්</option>
+                    <option value="12">දෙසැම්බර්</option>
+                </select>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>නම මගින් සෙවීම:</label>
+                <input type="text" id="searchName" oninput="displayRecords()" placeholder="සෙවීමට නම ටයිප් කරන්න...">
+            </div>
+        </div>
 
-        <!-- මාසික/වාර්ෂික සාරාංශය -->
-        <div class="summary-box">
-            <div id="totalMeals">මුළු වේල් ගණන: 0</div>
-            <div id="totalExpenses">මුළු වියදම: රු. 0.00</div>
-        </div>
-    </div>
+        <!-- මාසික/වාර්ෂික සාරාංශය -->
+        <div class="summary-box">
+            <div id="totalMeals">මුළු වේල් ගණන: 0</div>
+            <div id="totalExpenses">මුළු වියදම: රු. 0.00</div>
+        </div>
+    </div>
 
-    <!-- ලැයිස්තුව (Simple Table Mode) -->
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>දිනය</th>
-                    <th>නම</th>
-                    <th>ලිපිනය</th>
-                    <th>දුරකථනය</th>
-                    <th>පැමිණීම</th>
-                    <th>වියදම (රු.)</th>
-                    <th>ක්‍රියාකාරකම්</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <tr><td colspan="7" style="text-align:center;">දත්ත බාගත වෙමින් පවතී...</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <!-- ලැයිස්තුව (Simple Table Mode) -->
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>දිනය</th>
+                    <th>නම</th>
+                    <th>ලිපිනය</th>
+                    <th>දුරකථනය</th>
+                    <th>පැමිණීම</th>
+                    <th>වියදම (රු.)</th>
+                    <th>ක්‍රියාකාරකම්</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="7" style="text-align:center;">දත්ත බාගත වෙමින් පවතී...</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<!-- Firebase SDK Scripts -->
+<!-- Firebase Cloud SDK Scripts -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-    // ⚠️ ඔබේ Firebase Config විස්තර මෙතැනට ඇතුලත් කරන්න
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
+    // ⚠️ ඔබේ Firebase Config විස්තර මෙතැනට ඇතුලත් කරන්න
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // Firebase Initializing
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    let allRecords = [];
-    let editId = null;
+    let allRecords = [];
+    let editId = null;
 
-    // Firebase එකෙන් දත්ත කියවීම
-    db.collection("danawel").orderBy("date")
-      .onSnapshot((snapshot) => {
-        allRecords = [];
-        snapshot.forEach((doc) => {
-            allRecords.push({ id: doc.id, ...doc.data() });
-        });
-        displayRecords();
-      });
+    // Firebase වෙතින් Real-time (සජීවීව) දත්ත ලබාගැනීම
+    db.collection("danawel").orderBy("date")
+      .onSnapshot((snapshot) => {
+        allRecords = [];
+        snapshot.forEach((doc) => {
+            allRecords.push({ id: doc.id, ...doc.data() });
+        });
+        displayRecords();
+      }, (error) => {
+          console.error("Database Error: ", error);
+          alert("දත්ත සම්බන්ධතා දෝෂයක්! කරුණාකර Firebase Config හෝ Rules පරීක්ෂා කරන්න.");
+      });
 
-    // දත්ත පෙන්වීම සහ ගණනය කිරීම
-    function displayRecords() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = "";
+    // දත්ත පෙරීම (Filtering) සහ දිනපතා (Daily-wise) දර්ශනය කිරීම
+    function displayRecords() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "";
 
-        const selectedYear = document.getElementById('filterYear').value;
-        const selectedMonth = document.getElementById('filterMonth').value;
-        const searchName = document.getElementById('searchName').value.toLowerCase();
+        const selectedYear = document.getElementById('filterYear').value;
+        const selectedMonth = document.getElementById('filterMonth').value;
+        const searchName = document.getElementById('searchName').value.toLowerCase();
 
-        let totalMealsCount = 0;
-        let totalCost = 0;
+        let totalMealsCount = 0;
+        let totalCost = 0;
 
-        // ෆිල්ටර් කිරීම
-        const filtered = allRecords.filter(record => {
-            const resDate = new Date(record.date);
-            const resYear = resDate.getFullYear().toString();
-            const resMonth = (resDate.getMonth() + 1).toString().padStart(2, '0');
-            
-            const matchYear = (selectedYear === "All" || resYear === selectedYear);
-            const matchMonth = (selectedMonth === "All" || resMonth === selectedMonth);
-            const matchName = record.name.toLowerCase().includes(searchName);
+        const filtered = allRecords.filter(record => {
+            if (!record.date) return false;
+            const resDate = new Date(record.date);
+            const resYear = resDate.getFullYear().toString();
+            const resMonth = (resDate.getMonth() + 1).toString().padStart(2, '0');
+            
+            const matchYear = (selectedYear === "All" || resYear === selectedYear);
+            const matchMonth = (selectedMonth === "All" || resMonth === selectedMonth);
+            const matchName = record.name ? record.name.toLowerCase().includes(searchName) : false;
 
-            return matchYear && matchMonth && matchName;
-        });
+            return matchYear && matchMonth && matchName;
+        });
 
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">ගැලපෙන දත්ත කිසිවක් නැත.</td></tr>`;
-            document.getElementById('totalMeals').innerText = "මුළු වේල් ගණන: 0";
-            document.getElementById('totalExpenses').innerText = "මුළු වියදම: රු. 0.00";
-            return;
-        }
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">ගැලපෙන දත්ත කිසිවක් සොයාගත නොහැක.</td></tr>`;
+            document.getElementById('totalMeals').innerText = "මුළු වේල් ගණන: 0";
+            document.getElementById('totalExpenses').innerText = "මුළු වියදම: රු. 0.00";
+            return;
+        }
 
-        // Table එකට දත්ත ඇතුලත් කිරීම
-        filtered.forEach((record) => {
-            totalMealsCount++;
-            const expenseValue = parseFloat(record.expense) || 0;
-            totalCost += expenseValue;
+        // වගුව (Table) තුලට දත්ත පේළි ඇතුලත් කිරීම
+        filtered.forEach((record) => {
+            totalMealsCount++;
+            const expenseValue = parseFloat(record.expense) || 0;
+            totalCost += expenseValue;
 
-            // පැමිණීමේ තත්ත්වය අනුව පාට වෙනස් කිරීම
-            let attendanceBadge = `<span class="badge badge-unknown">${record.attendance}</span>`;
-            if(record.attendance === "ඔව්") attendanceBadge = `<span class="badge badge-yes">ඔව්</span>`;
-            if(record.attendance === "නැත") attendanceBadge = `<span class="badge badge-no">නැත</span>`;
+            let attendanceBadge = `<span class="badge badge-unknown">${record.attendance || 'තවම දන්නේ නැත'}</span>`;
+            if(record.attendance === "ඔව්") attendanceBadge = `<span class="badge badge-yes">ඔව්</span>`;
+            if(record.attendance === "නැත") attendanceBadge = `<span class="badge badge-no">නැත</span>`;
 
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${record.date}</strong></td>
-                    <td>${record.name}</td>
-                    <td>${record.address}</td>
-                    <td>${record.phone}</td>
-                    <td>${attendanceBadge}</td>
-                    <td>${expenseValue.toFixed(2)}</td>
-                    <td>
-                        <button class="action-btn edit-btn" onclick="editRecord('${record.id}', '${record.date}', '${record.name}', '${record.address}', '${record.phone}', '${record.attendance}', ${expenseValue})">Edit</button>
-                        <button class="action-btn delete-btn" onclick="deleteRecord('${record.id}')">Delete</button>
-                    </td>
-                </tr>
-            `;
-        });
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${record.date}</strong></td>
+                    <td>${record.name || ''}</td>
+                    <td>${record.address || ''}</td>
+                    <td>${record.phone || ''}</td>
+                    <td>${attendanceBadge}</td>
+                    <td>${expenseValue.toFixed(2)}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editRecord('${record.id}', '${record.date}', '${record.name}', '${record.address}', '${record.phone}', '${record.attendance}', ${expenseValue})">Edit</button>
+                        <button class="action-btn delete-btn" onclick="deleteRecord('${record.id}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
 
-        // සාරාංශය යාවත්කාලීන කිරීම (Update Summary)
-        document.getElementById('totalMeals').innerText = `මුළු වේල් ගණන: ${totalMealsCount}`;
-        document.getElementById('totalExpenses').innerText = `මුළු වියදම: රු. ${totalCost.toFixed(2)}`;
-    }
+        // සාරාංශය (Summary Boxes) යාවත්කාලීන කිරීම
+        document.getElementById('totalMeals').innerText = `මුළු වේල් ගණන: ${totalMealsCount}`;
+        document.getElementById('totalExpenses').innerText = `මුළු වියදම: රු. ${totalCost.toFixed(2)}`;
+    }
 
-    // දත්ත සුරැකීම (Insert / Update)
-    function saveRecord() {
-        const date = document.getElementById('date').value;
-        const name = document.getElementById('name').value;
-        const address = document.getElementById('address').value;
-        const phone = document.getElementById('phone').value;
-        const attendance = document.getElementById('attendance').value;
-        const expense = document.getElementById('expense').value || 0;
+    // දත්ත Cloud Database එකට සුරැකීම (Insert / Update)
+    function saveRecord() {
+        const date = document.getElementById('date').value;
+        const name = document.getElementById('name').value;
+        const address = document.getElementById('address').value;
+        const phone = document.getElementById('phone').value;
+        const attendance = document.getElementById('attendance').value;
+        const expense = document.getElementById('expense').value || 0;
 
-        if (!date || !name || !address || !phone) {
-            alert("කරුණාකර ප්‍රධාන විස්තර (දිනය, නම, ලිපිනය, දුරකථනය) ඇතුලත් කරන්න!");
-            return;
-        }
+        if (!date || !name || !address || !phone) {
+            alert("කරුණාකර ප්‍රධාන විස්තර (දිනය, නම, ලිපිනය, දුරකථනය) සියල්ල ඇතුලත් කරන්න!");
+            return;
+        }
 
-        const recordData = { date, name, address, phone, attendance, expense: parseFloat(expense) };
+        const recordData = { date, name, address, phone, attendance, expense: parseFloat(expense) };
 
-        if (editId) {
-            db.collection("danawel").doc(editId).update(recordData)
-            .then(() => {
-                editId = null;
-                document.getElementById('submitBtn').innerText = "දත්ත සුරකින්න";
-                clearForm();
-            });
-        } else {
-            db.collection("danawel").add(recordData)
-            .then(() => {
-                clearForm();
-            });
-        }
-    }
+        if (editId) {
+            // පවතින දත්තයක් වෙනස් කිරීම (Update)
+            db.collection("danawel").doc(editId).update(recordData)
+            .then(() => {
+                editId = null;
+                document.getElementById('submitBtn').innerText = "දත්ත සුරකින්න";
+                clearForm();
+            }).catch(err => alert("දත්ත වෙනස් කිරීමට නොහැකි විය: " + err.message));
+        } else {
+            // අලුත් දත්තයක් එකතු කිරීම (Add)
+            db.collection("danawel").add(recordData)
+            .then(() => {
+                clearForm();
+            }).catch(err => alert("දත්ත සුරැකීමට නොහැකි විය: " + err.message));
+        }
+    }
 
-    // වෙනස් කිරීමට තෝරා ගැනීම
-    function editRecord(id, date, name, address, phone, attendance, expense) {
-        document.getElementById('date').value = date;
-        document.getElementById('name').value = name;
-        document.getElementById('address').value = address;
-        document.getElementById('phone').value = phone;
-        document.getElementById('attendance').value = attendance;
-        document.getElementById('expense').value = expense;
-        
-        editId = id;
-        document.getElementById('submitBtn').innerText = "යාවත්කාලීන කරන්න (Update)";
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
+    // Edit බටන් එක එබූ විට Form එකට දත්ත ලබාගැනීම
+    function editRecord(id, date, name, address, phone, attendance, expense) {
+        document.getElementById('date').value = date;
+        document.getElementById('name').value = name;
+        document.getElementById('address').value = address;
+        document.getElementById('phone').value = phone;
+        document.getElementById('attendance').value = attendance;
+        document.getElementById('expense').value = expense;
+        
+        editId = id;
+        document.getElementById('submitBtn').innerText = "යාවත්කාලීන කරන්න (Update)";
+        window.scrollTo({top: 0, behavior: 'smooth'}); // පිටුවේ ඉහලට Screen එක ගෙනයෑමට
+    }
 
-    // මකා දැමීම
-    function deleteRecord(id) {
-        if (confirm("මෙම විස්තරය මකා දැමීමට අවශ්‍යද?")) {
-            db.collection("danawel").doc(id).delete();
-        }
-    }
+    // දත්තයක් මකා දැමීම (Delete)
+    function deleteRecord(id) {
+        if (confirm("මෙම දාන වේලේ විස්තරය සදහටම මකා දැමීමට අවශ්‍යද?")) {
+            db.collection("danawel").doc(id).delete()
+            .catch(err => alert("මකා දැමීමට නොහැකි විය: " + err.message));
+        }
+    }
 
-    function clearForm() {
-        document.getElementById('date').value = "";
-        document.getElementById('name').value = "";
-        document.getElementById('address').value = "";
-        document.getElementById('phone').value = "";
-        document.getElementById('attendance').value = "ඔව්";
-        document.getElementById('expense').value = "";
-    }
+    // Form එක හිස් කිරීම
+    function clearForm() {
+        document.getElementById('date').value = "";
+        document.getElementById('name').value = "";
+        document.getElementById('address').value = "";
+        document.getElementById('phone').value = "";
+        document.getElementById('attendance').value = "ඔව්";
+        document.getElementById('expense').value = "";
+    }
 </script>
 
 </body>
