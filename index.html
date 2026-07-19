@@ -7,8 +7,8 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 15px; background-color: #f4f4f9; font-size: 14px; }
         h2 { text-align: center; color: #333; margin-bottom: 10px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 15px; }
         .form-group { display: flex; flex-direction: column; }
         label { margin-bottom: 3px; font-weight: bold; color: #444; }
         input, select { padding: 6px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
@@ -20,7 +20,7 @@
         .filter-section { background: #e9ecef; padding: 12px; border-radius: 6px; margin-top: 20px; }
         .summary-box { display: flex; justify-content: space-around; background: #007bff; color: white; padding: 10px; border-radius: 5px; margin-top: 10px; font-weight: bold; }
         
-        /* Table Styling (Simple Mode) */
+        /* Table Styling */
         .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
@@ -52,15 +52,19 @@
         </div>
         <div class="form-group">
             <label>නම:</label>
-            <input type="text" id="name" placeholder="නම">
+            <input type="text" id="name" placeholder="නම" list="nameList">
+            <datalist id="nameList"></datalist>
         </div>
         <div class="form-group">
             <label>ලිපිනය:</label>
-            <input type="text" id="address" placeholder="ලිපිනය">
+            <!-- list="addressList" මඟින් ලිපිනය සඳහා auto-suggest සක්‍රීය කරයි -->
+            <input type="text" id="address" placeholder="ලිපිනය" list="addressList">
+            <datalist id="addressList"></datalist>
         </div>
         <div class="form-group">
             <label>දුරකථනය:</label>
-            <input type="tel" id="phone" placeholder="දුරකථනය">
+            <input type="tel" id="phone" placeholder="දුරකථනය" list="phoneList">
+            <datalist id="phoneList"></datalist>
         </div>
         <div class="form-group">
             <label>පැමිණෙනවාද?:</label>
@@ -76,7 +80,14 @@
         </div>
         <div class="form-group">
             <label>විශේෂ හේතුව:</label>
-            <input type="text" id="reason" placeholder="විශේෂ හේතුව">
+            <!-- list="reasonList" මඟින් විශේෂ හේතුව සඳහා auto-suggest සක්‍රීය කරයි -->
+            <input type="text" id="reason" placeholder="විශේෂ හේතුව" list="reasonList">
+            <datalist id="reasonList"></datalist>
+        </div>
+        <div class="form-group">
+            <label>ඇතුලත් කළේ කවුද?:</label>
+            <input type="text" id="enteredBy" placeholder="ඔබේ නම" list="enteredByList">
+            <datalist id="enteredByList"></datalist>
         </div>
     </div>
     <button id="submitBtn" class="submit-btn">දත්ත සුරකින්න</button>
@@ -136,11 +147,12 @@
                     <th>පැමිණීම</th>
                     <th>වියදම (රු.)</th>
                     <th>විශේෂ හේතුව</th>
+                    <th>ඇතුලත් කළේ</th>
                     <th>ක්‍රියාකාරකම්</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <tr><td colspan="8" style="text-align:center;">දත්ත බාගත වෙමින් පවතී...</td></tr>
+                <tr><td colspan="9" style="text-align:center;">දත්ත බාගත වෙමින් පවතී...</td></tr>
             </tbody>
         </table>
     </div>
@@ -161,7 +173,7 @@
         orderBy 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // ✅ ඔයාගේ Firebase Config විස්තර මෙතැනට ඇතුලත් කර ඇත
+    // ✅ ඔයාගේ Firebase Config විස්තර
     const firebaseConfig = {
         apiKey: "AIzaSyB9-ZzRx0xAlUABVSTqE64V4C0GhKw0Rxw",
         authDomain: "nauyna-sripada-dana-schedule.firebaseapp.com",
@@ -178,15 +190,49 @@
     let allRecords = [];
     let editId = null;
 
-    // සජීවීව (Live) දත්ත වෙනස්වීම් හඳුනාගෙන 5 දෙනාටම එකවර පෙන්වීම
+    // සජීවීව (Live) දත්ත වෙනස්වීම් හඳුනාගැනීම
     const q = query(collection(db, "danawel"), orderBy("date"));
     onSnapshot(q, (snapshot) => {
         allRecords = [];
         snapshot.forEach((doc) => {
             allRecords.push({ id: doc.id, ...doc.data() });
         });
+        updateAutoSuggestLists(); // Autocomplete ලැයිස්තු අලුත් කිරීම
         displayRecords();
     });
+
+    // කලින් ඇතුලත් කල දත්ත අනුව Suggestion Lists සෑදීම
+    function updateAutoSuggestLists() {
+        const names = new Set();
+        const addresses = new Set();
+        const phones = new Set();
+        const reasons = new Set();
+        const users = new Set();
+
+        allRecords.forEach(r => {
+            if(r.name) names.add(r.name);
+            if(r.address) addresses.add(r.address);
+            if(r.phone) phones.add(r.phone);
+            if(r.reason) reasons.add(r.reason);
+            if(r.enteredBy) users.add(r.enteredBy);
+        });
+
+        buildDatalist("nameList", names);
+        buildDatalist("addressList", addresses);
+        buildDatalist("phoneList", phones);
+        buildDatalist("reasonList", reasons);
+        buildDatalist("enteredByList", users);
+    }
+
+    function buildDatalist(elementId, dataset) {
+        const datalist = document.getElementById(elementId);
+        datalist.innerHTML = "";
+        dataset.forEach(value => {
+            const option = document.createElement("option");
+            option.value = value;
+            datalist.appendChild(option);
+        });
+    }
 
     // දත්ත වගුවට එක් කිරීමේ ප්‍රධාන කොටස
     function displayRecords() {
@@ -216,7 +262,7 @@
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:red;">ගැලපෙන දත්ත කිසිවක් නැත.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">ගැලපෙන දත්ත කිසිවක් නැත.</td></tr>`;
             document.getElementById('totalMeals').innerText = "මුළු වේල් ගණන: 0";
             document.getElementById('totalExpenses').innerText = "මුළු වියදම: රු. 0.00";
             return;
@@ -228,6 +274,7 @@
             const expenseValue = parseFloat(record.expense) || 0;
             totalCost += expenseValue;
             const specialReason = record.reason || "-";
+            const whoEntered = record.enteredBy || "-";
 
             let attendanceBadge = `<span class="badge badge-unknown">${record.attendance}</span>`;
             if(record.attendance === "ඔව්") attendanceBadge = `<span class="badge badge-yes">ඔව්</span>`;
@@ -242,6 +289,7 @@
                 <td>${attendanceBadge}</td>
                 <td>${expenseValue.toFixed(2)}</td>
                 <td>${specialReason}</td>
+                <td><i style="color:#555;">${whoEntered}</i></td>
                 <td></td>
             `;
 
@@ -275,22 +323,21 @@
         const attendance = document.getElementById('attendance').value;
         const expense = document.getElementById('expense').value || 0;
         const reason = document.getElementById('reason').value || "";
+        const enteredBy = document.getElementById('enteredBy').value || "";
 
-        if (!date || !name || !address || !phone) {
-            alert("කරුණාකර ප්‍රධාන විස්තර (දිනය, නම, ලිපිනය, දුරකථනය) ඇතුලත් කරන්න!");
+        if (!date || !name || !address || !phone || !enteredBy) {
+            alert("කරුණාකර ප්‍රධාන විස්තර (දිනය, නම, ලිපිනය, දුරකථනය, ඇතුලත් කළේ කවුද) ඇතුලත් කරන්න!");
             return;
         }
 
-        const recordData = { date, name, address, phone, attendance, expense: parseFloat(expense), reason };
+        const recordData = { date, name, address, phone, attendance, expense: parseFloat(expense), reason, enteredBy };
 
         try {
             if (editId) {
-                // පවතින දත්ත යාවත්කාලීන කිරීම
                 await updateDoc(doc(db, "danawel", editId), recordData);
                 editId = null;
                 document.getElementById('submitBtn').innerText = "දත්ත සුරකින්න";
             } else {
-                // අලුත් දත්ත ඇතුලත් කිරීම
                 await addDoc(collection(db, "danawel"), recordData);
             }
             clearForm();
@@ -309,13 +356,14 @@
         document.getElementById('attendance').value = record.attendance;
         document.getElementById('expense').value = record.expense;
         document.getElementById('reason').value = record.reason || "";
+        document.getElementById('enteredBy').value = record.enteredBy || "";
         
         editId = record.id;
         document.getElementById('submitBtn').innerText = "යාවත්කාලීන කරන්න (Update)";
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    // අන්තර්ජාලයෙන් දත්ත සදහටම මකා දැමීම
+    // අන්තර්ජාලයෙන් දත්ත මකා දැමීම
     async function deleteRecord(id) {
         if (confirm("මෙම විස්තරය මකා දැමීමට අවශ්‍යද?")) {
             try {
