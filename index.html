@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>දාන වේල් කළමනාකරණය (නා උයන ශ්‍රී පාද ආරණ්‍යය)</title>
+    <title>දාන වේල් කළමනාකරණය (නා උයන ශ්‍රීපාද ආරණ්‍යය)</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 15px; background-color: #f4f4f9; font-size: 14px; }
         h2 { text-align: center; color: #333; margin-bottom: 10px; }
@@ -32,11 +32,11 @@
         .edit-btn { background-color: #ffc107; color: black; }
         .delete-btn { background-color: #dc3545; color: white; }
         
-        /* Badges */
-        .badge { padding: 3px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; text-align: center; display: inline-block; }
-        .badge-yes { background-color: #d4edda; color: #155724; }
-        .badge-no { background-color: #f8d7da; color: #721c24; }
-        .badge-unknown { background-color: #fff3cd; color: #856404; }
+        /* Badges (යාවත්කාලීන කරන ලද වර්ණ) */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-align: center; display: inline-block; width: 100px; box-sizing: border-box; }
+        .badge-yes { background-color: #007bff; color: white; } /* ඔව් -> Blue */
+        .badge-no { background-color: #dc3545; color: white; } /* නැත -> Red */
+        .badge-unknown { background-color: #28a745; color: white; } /* තවම දන්නේ නැත -> Green */
         
         /* Footer Summary Styling */
         .table-summary-row { background-color: #e2e3e5 !important; font-weight: bold; border-top: 2px solid #6c757d; }
@@ -45,7 +45,7 @@
 <body>
 
 <div class="container">
-    <h2>දාන වේල් දිනපොත (නා උයන ශ්‍රී පාද ආරණ්‍යය)</h2>
+    <h2>දාන වේල් දිනපොත (නා උයන ශ්‍රීපාද ආරණ්‍යය)</h2>
     
     <!-- දත්ත ඇතුලත් කිරීමේ කොටස -->
     <div class="form-grid">
@@ -255,10 +255,9 @@
         const filtered = allRecords.filter(record => {
             if (!record.date || !record.name) return false;
             
-            // YYYY-MM-DD ආකෘතියෙන් එන Text එක කෙලින්ම වෙන් කර ගනී (Timezone ගැටළු මග හැරේ)
             const dateParts = record.date.split("-"); 
-            const resYear = dateParts[0]; // උදා: "2026"
-            const resMonth = dateParts[1]; // උදා: "07" (July) හෝ "08" (August)
+            const resYear = dateParts[0]; 
+            const resMonth = dateParts[1]; 
             
             const matchYear = (selectedYear === "All" || resYear === selectedYear);
             const matchMonth = (selectedMonth === "All" || resMonth === selectedMonth);
@@ -316,7 +315,7 @@
             tbody.appendChild(tr);
         });
 
-        // වගුවේ පහළින්ම තෝරාගත් මාසයට පමණක් අදාළව මුළු වේල් ගණන සහ මුළු වියදම Footer Row එකක් ලෙස එකතු කිරීම
+        // වගුවේ පහළින්ම Footer Row එකක් ලෙස එකතු කිරීම
         const footerTr = document.createElement('tr');
         footerTr.className = "table-summary-row";
         footerTr.innerHTML = `
