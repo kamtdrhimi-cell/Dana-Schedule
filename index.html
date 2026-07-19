@@ -37,6 +37,9 @@
         .badge-yes { background-color: #d4edda; color: #155724; }
         .badge-no { background-color: #f8d7da; color: #721c24; }
         .badge-unknown { background-color: #fff3cd; color: #856404; }
+        
+        /* Footer Summary Styling */
+        .table-summary-row { background-color: #e2e3e5 !important; font-weight: bold; border-top: 2px solid #6c757d; }
     </style>
 </head>
 <body>
@@ -57,7 +60,6 @@
         </div>
         <div class="form-group">
             <label>ලිපිනය:</label>
-            <!-- list="addressList" මඟින් ලිපිනය සඳහා auto-suggest සක්‍රීය කරයි -->
             <input type="text" id="address" placeholder="ලිපිනය" list="addressList">
             <datalist id="addressList"></datalist>
         </div>
@@ -80,7 +82,6 @@
         </div>
         <div class="form-group">
             <label>විශේෂ හේතුව:</label>
-            <!-- list="reasonList" මඟින් විශේෂ හේතුව සඳහා auto-suggest සක්‍රීය කරයි -->
             <input type="text" id="reason" placeholder="විශේෂ හේතුව" list="reasonList">
             <datalist id="reasonList"></datalist>
         </div>
@@ -154,6 +155,8 @@
             <tbody id="tableBody">
                 <tr><td colspan="9" style="text-align:center;">දත්ත බාගත වෙමින් පවතී...</td></tr>
             </tbody>
+            <!-- වගුවේ පහළින්ම එකතුව පෙන්වන කොටස -->
+            <tfoot id="tableFoot"></tfoot>
         </table>
     </div>
 </div>
@@ -237,7 +240,9 @@
     // දත්ත වගුවට එක් කිරීමේ ප්‍රධාන කොටස
     function displayRecords() {
         const tbody = document.getElementById('tableBody');
+        const tfoot = document.getElementById('tableFoot');
         tbody.innerHTML = "";
+        tfoot.innerHTML = "";
 
         const selectedYear = document.getElementById('filterYear').value;
         const selectedMonth = document.getElementById('filterMonth').value;
@@ -246,13 +251,14 @@
         let totalMealsCount = 0;
         let totalCost = 0;
 
-        // පෙරහන් කිරීම්
+        // Strict Month Filtering - String සංසන්දනය මඟින් මාසය නිවැරදිව වෙන් කිරීම
         const filtered = allRecords.filter(record => {
             if (!record.date || !record.name) return false;
             
-            const resDate = new Date(record.date);
-            const resYear = resDate.getFullYear().toString();
-            const resMonth = (resDate.getMonth() + 1).toString().padStart(2, '0');
+            // YYYY-MM-DD ආකෘතියෙන් එන Text එක කෙලින්ම වෙන් කර ගනී (Timezone ගැටළු මග හැරේ)
+            const dateParts = record.date.split("-"); 
+            const resYear = dateParts[0]; // උදා: "2026"
+            const resMonth = dateParts[1]; // උදා: "07" (July) හෝ "08" (August)
             
             const matchYear = (selectedYear === "All" || resYear === selectedYear);
             const matchMonth = (selectedMonth === "All" || resMonth === selectedMonth);
@@ -309,6 +315,17 @@
             actionTd.appendChild(deleteBtn);
             tbody.appendChild(tr);
         });
+
+        // වගුවේ පහළින්ම තෝරාගත් මාසයට පමණක් අදාළව මුළු වේල් ගණන සහ මුළු වියදම Footer Row එකක් ලෙස එකතු කිරීම
+        const footerTr = document.createElement('tr');
+        footerTr.className = "table-summary-row";
+        footerTr.innerHTML = `
+            <td colspan="4" style="text-align:right;">මුළු එකතුව (තෝරාගත් කාල සීමාවට):</td>
+            <td>වේල්: ${totalMealsCount}</td>
+            <td>රු. ${totalCost.toFixed(2)}</td>
+            <td colspan="3"></td>
+        `;
+        tfoot.appendChild(footerTr);
 
         document.getElementById('totalMeals').innerText = `මුළු වේල් ගණන: ${totalMealsCount}`;
         document.getElementById('totalExpenses').innerText = `මුළු වියදම: රු. ${totalCost.toFixed(2)}`;
